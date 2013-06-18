@@ -70,7 +70,7 @@ In its simplest form, we make a listview with 100 items::
             super(MainView, self).__init__(**kwargs)
 
             list_view = ListView(
-                item_strings=[str(index) for index in xrange(100)])
+                item_strings=[str(index) for index in range(100)])
 
             self.add_widget(list_view)
 
@@ -92,7 +92,7 @@ Or, we could declare the listview in using the kv language::
         size: 400, 400
         ListView:
             size_hint: .8, .8
-            item_strings: [str(index) for index in xrange(100)]
+            item_strings: [str(index) for index in range(100)]
     """)
 
 
@@ -134,7 +134,7 @@ To use :class:`SimpleListAdaper` explicitly in creating a ListView instance,
 do::
 
     simple_list_adapter = SimpleListAdapter(
-            data=["Item #{0}".format(i) for i in xrange(100)],
+            data=["Item #{0}".format(i) for i in range(100)],
             cls=Label)
 
     list_view = ListView(adapter=simple_list_adapter)
@@ -170,7 +170,7 @@ given to the way longer python blocks are indented::
             size_hint: .8, .8
             adapter:
                 sla.SimpleListAdapter(
-                data=["Item #{0}".format(i) for i in xrange(100)],
+                data=["Item #{0}".format(i) for i in range(100)],
                 cls=label.Label)
     """)
 
@@ -320,7 +320,7 @@ Now, to some example code::
     from kivy.adapters.listadapter import ListAdapter
     from kivy.uix.listview import ListItemButton, ListView
 
-    data = [{'text': str(i), 'is_selected': False} for i in xrange(100)]
+    data = [{'text': str(i), 'is_selected': False} for i in range(100)]
 
     args_converter = lambda row_index, rec: {'text': rec['text'],
                                              'size_hint_y': None,
@@ -442,9 +442,9 @@ template. For example, to use the kv template above::
                                     'size_hint_y': None,
                                     'height': 25}
     integers_dict = \
-        { str(i): {'text': str(i), 'is_selected': False} for i in xrange(100)}
+        { str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
 
-    dict_adapter = DictAdapter(sorted_keys=[str(i) for i in xrange(100)],
+    dict_adapter = DictAdapter(sorted_keys=[str(i) for i in range(100)],
                                data=integers_dict,
                                args_converter=list_item_args_converter,
                                template='CustomListItem')
@@ -482,10 +482,10 @@ widget method::
                            {'cls': ListItemButton,
                             'kwargs': {'text': rec['text']}}]}
 
-    item_strings = ["{0}".format(index) for index in xrange(100)]
+    item_strings = ["{0}".format(index) for index in range(100)]
 
     integers_dict = \
-        { str(i): {'text': str(i), 'is_selected': False} for i in xrange(100)}
+        { str(i): {'text': str(i), 'is_selected': False} for i in range(100)}
 
     dict_adapter = DictAdapter(sorted_keys=item_strings,
                                data=integers_dict,
@@ -888,7 +888,7 @@ class ListView(AbstractView, EventDispatcher):
     _count = NumericProperty(0)
 
     _wstart = NumericProperty(0)
-    _wend = NumericProperty(None)
+    _wend = NumericProperty(None, allownone=True)
 
     __events__ = ('on_scroll_complete', )
 
@@ -915,6 +915,8 @@ class ListView(AbstractView, EventDispatcher):
         super(ListView, self).__init__(**kwargs)
 
         self._trigger_populate = Clock.create_trigger(self._spopulate, -1)
+        self._trigger_reset_populate = \
+            Clock.create_trigger(self._reset_spopulate, -1)
 
         self.bind(size=self._trigger_populate,
                   pos=self._trigger_populate,
@@ -939,6 +941,7 @@ class ListView(AbstractView, EventDispatcher):
     def _scroll(self, scroll_y):
         if self.row_height is None:
             return
+        self._scroll_y = scroll_y
         scroll_y = 1 - min(1, max(scroll_y, 0))
         container = self.container
         mstart = (container.height - self.height) * scroll_y
@@ -962,8 +965,17 @@ class ListView(AbstractView, EventDispatcher):
             self._wstart = istart
             self._wend = iend + 10
 
-    def _spopulate(self, *dt):
+    def _spopulate(self, *args):
         self.populate()
+
+    def _reset_spopulate(self, *args):
+        self._wend = None
+        self.populate()
+        # simulate the scroll again, only if we already scrolled before
+        # the position might not be the same, mostly because we don't know the
+        # size of the new item.
+        if hasattr(self, '_scroll_y'):
+            self._scroll(self._scroll_y)
 
     def populate(self, istart=None, iend=None):
         container = self.container
@@ -983,7 +995,7 @@ class ListView(AbstractView, EventDispatcher):
 
             # fill with a "padding"
             fh = 0
-            for x in xrange(istart):
+            for x in range(istart):
                 fh += sizes[x] if x in sizes else rh
             container.add_widget(Widget(size_hint_y=None, height=fh))
 

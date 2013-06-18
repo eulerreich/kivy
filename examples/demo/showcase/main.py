@@ -176,6 +176,10 @@ class ComplexWidgets(FloatLayout):
     pass
 
 
+class ComplexWidgets2(FloatLayout):
+    pass
+
+
 class TreeViewWidgets(FloatLayout):
     pass
 
@@ -195,8 +199,8 @@ class ShowcaseApp(App):
             w = getattr(self, 'show_%s' %
                         value.text.lower().replace(' ', '_'))()
             self.content.add_widget(w)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
 
     def on_pause(self):
         return True
@@ -216,7 +220,8 @@ class ShowcaseApp(App):
         tree.bind(selected_node=self.on_select_node)
         n = create_tree('Widgets')
         attach_node('Standard widgets', n)
-        attach_node('Complex widgets', n)
+        attach_node('Complex widgets 1', n)
+        attach_node('Complex widgets 2', n)
         attach_node('Scatters', n)
         attach_node('Treeviews', n)
         attach_node('Font Sizes', n)
@@ -241,8 +246,11 @@ class ShowcaseApp(App):
     def show_standard_widgets(self):
         return StandardWidgets()
 
-    def show_complex_widgets(self):
+    def show_complex_widgets_1(self):
         return ComplexWidgets()
+
+    def show_complex_widgets_2(self):
+        return ComplexWidgets2()
 
     def show_anchor_layout(self):
         return AnchorLayoutShowcase()
@@ -312,13 +320,13 @@ class ShowcaseApp(App):
 
     def populate_treeview(self, tv):
         n = tv.add_node(TreeViewLabel(text='Item 1'))
-        for x in xrange(3):
+        for x in range(3):
             tv.add_node(TreeViewLabel(text='Subitem %d' % x), n)
         n = tv.add_node(TreeViewLabel(text='Item 2', is_open=True))
-        for x in xrange(3):
+        for x in range(3):
             tv.add_node(TreeViewLabel(text='Subitem %d' % x), n)
         n = tv.add_node(TreeViewLabel(text='Item 3'))
-        for x in xrange(3):
+        for x in range(3):
             tv.add_node(TreeViewLabel(text='Subitem %d' % x), n)
         return tv
 

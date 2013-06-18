@@ -237,7 +237,7 @@ cdef class Fbo(RenderContext):
             self.fbo.release()
 
             # then, your fbo texture is available at
-            print self.fbo.texture
+            print(self.fbo.texture)
         '''
         if self._is_bound:
             self.raise_exception('FBO already binded.')
@@ -381,11 +381,11 @@ cdef class Fbo(RenderContext):
     property pixels:
         '''Get the pixels texture, in RGBA format only, unsigned byte.
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         def __get__(self):
             w,h = self._width, self._height
             self.bind()
             data = py_glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE)
             self.release()
-            return str(buffer(data))
+            return data

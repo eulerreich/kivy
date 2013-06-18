@@ -18,6 +18,7 @@ include "opcodes.pxi"
 from c_opengl cimport *
 IF USE_OPENGL_DEBUG == 1:
     from c_opengl_debug cimport *
+from kivy.compat import PY2
 from kivy.logger import Logger
 from kivy.graphics.context cimport get_context, Context
 
@@ -371,7 +372,7 @@ cdef class Callback(Instruction):
     The definition of the callback must be::
 
         def my_callback(self, instr):
-            print 'I have been called!'
+            print('I have been called!')
 
     .. warning::
 
@@ -598,7 +599,7 @@ cdef class Canvas(CanvasBase):
     property has_before:
         '''Property to see if the canvas.before is already created
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         def __get__(self):
             return self._before is not None
@@ -606,7 +607,7 @@ cdef class Canvas(CanvasBase):
     property has_after:
         '''Property to see if the canvas.after is already created
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         def __get__(self):
             return self._after is not None
@@ -781,7 +782,12 @@ cdef class RenderContext(Canvas):
         self._shader.stop()
 
     cdef void apply(self):
-        cdef list keys = self.state_stacks.keys()
+        cdef list keys
+        if PY2:
+            keys = self.state_stacks.keys()
+        else:
+            keys = list(self.state_stacks.keys())
+
         cdef RenderContext active_context = getActiveContext()
         if self._use_parent_projection:
             self.set_state('projection_mat',

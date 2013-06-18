@@ -38,7 +38,7 @@ cdef class Matrix:
 
         >>> from kivy.graphics.transformation import Matrix
         >>> m = Matrix()
-        >>> print m
+        >>> print(m)
         [[ 1.000000 0.000000 0.000000 0.000000 ]
         [ 0.000000 1.000000 0.000000 0.000000 ]
         [ 0.000000 0.000000 1.000000 0.000000 ]
@@ -401,7 +401,7 @@ cdef class Matrix:
             double vx, double vy, double vw, double vh):
         '''Project a point from 3d space to 2d viewport.
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         cdef double winx, winy, winz
         cdef list point = list(model.transform_point(objx, objy, objz, 1.0))

@@ -32,7 +32,7 @@ class ExceptionHandler:
 
         class E(ExceptionHandler):
             def handle_exception(self, inst):
-                Logger.exception(inst)
+                Logger.exception('Exception catched by ExceptionHandler')
                 return ExceptionManager.PASS
 
         ExceptionManager.add_handler(E())
@@ -299,10 +299,14 @@ class EventLoopBase(EventDispatcher):
         # flush all the canvas operation
         Builder.sync()
 
+        # tick before draw
+        Clock.tick_draw()
+
+        # flush all the canvas operation
+        Builder.sync()
+
         window = self.window
         if window and window.canvas.needs_redraw:
-            Clock.tick_draw()
-            Builder.sync()
             window.dispatch('on_draw')
             window.dispatch('on_flip')
 
@@ -353,7 +357,7 @@ def _run_mainloop():
             EventLoop.run()
             stopTouchApp()
             break
-        except BaseException, inst:
+        except BaseException as inst:
             # use exception manager first
             r = ExceptionManager.handle_exception(inst)
             if r == ExceptionManager.RAISE:
@@ -416,7 +420,7 @@ def runTouchApp(widget=None, slave=False):
             EventLoop.add_input_provider(p, True)
 
     # add postproc modules
-    for mod in kivy_postproc_modules.values():
+    for mod in list(kivy_postproc_modules.values()):
         EventLoop.add_postproc_module(mod)
 
     # add main widget

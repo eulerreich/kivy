@@ -289,7 +289,7 @@ cdef inline int _is_pow2(int v):
     return (v & (v - 1)) == 0
 
 
-cdef inline int _color_fmt_to_gl(bytes x):
+cdef inline int _color_fmt_to_gl(str x):
     '''Return the GL numeric value from a color string format
     '''
     x = x.lower()
@@ -311,7 +311,7 @@ cdef inline int _is_compressed_fmt(str x):
     return x.startswith('s3tc_dxt')
 
 
-cdef inline int _buffer_fmt_to_gl(bytes x):
+cdef inline int _buffer_fmt_to_gl(str x):
     '''Return the GL numeric value from a buffer string format
     '''
     x = x.lower()
@@ -321,8 +321,8 @@ cdef inline int _buffer_fmt_to_gl(bytes x):
         raise Exception('Unknown <%s> buffer format' % x)
 
 
-cdef inline int _buffer_type_to_gl_size(bytes x):
-    '''Return the size of a buffer string format in bytes
+cdef inline int _buffer_type_to_gl_size(str x):
+    '''Return the size of a buffer string format in str
     '''
     x = x.lower()
     try:
@@ -458,7 +458,7 @@ cdef Texture _texture_create(int width, int height, str colorfmt, str bufferfmt,
     cdef GLuint texid = 0
     cdef Texture texture
     cdef int texture_width, texture_height
-    cdef int glbufferfmt = _buffer_fmt_to_gl(<bytes>bufferfmt)
+    cdef int glbufferfmt = _buffer_fmt_to_gl(bufferfmt)
     cdef int make_npot = 0
 
     # check if it's a pot or not
@@ -487,7 +487,7 @@ cdef Texture _texture_create(int width, int height, str colorfmt, str bufferfmt,
     texture = Texture(texture_width, texture_height, target,
                       colorfmt=colorfmt, bufferfmt=bufferfmt, mipmap=mipmap,
                       callback=callback)
-    if allocate:
+    if allocate or make_npot:
         texture.flags |= TI_NEED_ALLOCATE
 
     # set default parameter for this texture
@@ -527,7 +527,7 @@ def texture_create(size=None, colorfmt=None, bufferfmt=None, mipmap=False,
             If a function is provided, it will be called when data will be
             needed in the texture.
 
-    .. versionchanged:: 1.6.1
+    .. versionchanged:: 1.7.0
         :data:`callback` has been added
     '''
     cdef int width = 128, height = 128, allocate = 1
@@ -824,7 +824,7 @@ cdef class Texture:
             pos = (0, 0)
         if size is None:
             size = self.size
-        bufferfmt = _buffer_fmt_to_gl(<bytes>bufferfmt)
+        bufferfmt = _buffer_fmt_to_gl(bufferfmt)
 
         # bind the texture, and create anything that should be created at this
         # time.
@@ -908,7 +908,6 @@ cdef class Texture:
         texture._nofree = 1
 
         # set the same parameters as our current texture
-        texture.bind()
         texture.set_wrap(self.wrap)
         texture.set_min_filter(self.min_filter)
         texture.set_mag_filter(self.mag_filter)
@@ -924,7 +923,7 @@ cdef class Texture:
         '''Save the texture content into a file. Check
         :meth:`kivy.core.image.Image.save` for more information about the usage.
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         from kivy.core.image import Image
         return Image(self).save(filename)
@@ -1072,7 +1071,7 @@ cdef class Texture:
     property pixels:
         '''Get the pixels texture, in RGBA format only, unsigned byte.
 
-        .. versionadded:: 1.6.1
+        .. versionadded:: 1.7.0
         '''
         def __get__(self):
             from kivy.graphics.fbo import Fbo
@@ -1115,8 +1114,16 @@ cdef class TextureRegion(Texture):
         self._id = self.owner.id
 
         # then update content again
-        for cb in self.observers:
-            cb(self)
+        self.bind()
+        for callback in self.observers[:]:
+            if callback.is_dead():
+                self.observers.remove(callback)
+                continue
+            callback()(self)
+
+    def ask_update(self, callback):
+        # redirect to owner
+        self.owner.ask_update(callback)
 
     cpdef bind(self):
         self.owner.bind()

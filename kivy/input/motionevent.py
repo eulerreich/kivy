@@ -68,7 +68,7 @@ If yo want to know if the current :class:`MotionEvent` have an angle::
 
     def on_touch_move(self, touch):
         if 'angle' in touch.profile:
-            print 'The touch angle is', touch.a
+            print('The touch angle is', touch.a)
 
 If you want to select only the fiducials::
 
@@ -112,7 +112,10 @@ class MotionEventMetaclass(type):
         return super(MotionEventMetaclass, mcs).__new__(mcs, name, bases, attrs)
 
 
-class MotionEvent(object):
+MotionEventBase = MotionEventMetaclass('MotionEvent', (object, ), {})
+
+
+class MotionEvent(MotionEventBase):
     '''Abstract class to represent a touch and no-touch object.
 
     :Parameters:
@@ -121,8 +124,6 @@ class MotionEvent(object):
         `args` : list
             list of parameters, passed to depack() function
     '''
-
-    __metaclass__ = MotionEventMetaclass
     __uniq_id = 0
     __attrs__ = \
         ('device', 'push_attrs', 'push_attrs_stack',
@@ -256,7 +257,7 @@ class MotionEvent(object):
         self.is_double_tap = False
 
         #: Indicate if the touch is a triple tap or not
-        #: .. versionadded:: 1.6.1
+        #: .. versionadded:: 1.7.0
         self.is_triple_tap = False
 
         #: If the touch is a :attr:`is_double_tap`, this is the time between the
@@ -265,7 +266,7 @@ class MotionEvent(object):
 
         #: If the touch is a :attr:`is_triple_tap`, this is the time between the
         #: first tap and the current touch.
-        #: .. versionadded:: 1.6.1
+        #: .. versionadded:: 1.7.0
         self.triple_tap_time = 0
 
         #: User data dictionnary. Use this dictionnary to save your own data on
@@ -384,7 +385,7 @@ class MotionEvent(object):
         '''Pop attributes values from the stack
         '''
         attrs, values = self.push_attrs_stack.pop()
-        for i in xrange(len(attrs)):
+        for i in range(len(attrs)):
             setattr(self, attrs[i], values[i])
 
     def apply_transform_2d(self, transform):
