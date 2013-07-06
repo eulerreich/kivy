@@ -11,16 +11,19 @@ from context_instructions cimport *
 from compiler cimport *
 from shader cimport *
 from texture cimport Texture
+from kivy._event cimport ObjectWithUid
 
 cdef void reset_gl_context()
 
 cdef class Instruction
 cdef class InstructionGroup(Instruction)
 
-cdef class Instruction:
+cdef class Instruction(ObjectWithUid):
     cdef int flags
     cdef str group
     cdef InstructionGroup parent
+    cdef object __weakref__
+    cdef object __proxy_ref
 
     cdef void apply(self)
     cdef void flag_update(self, int do_parent=?)
@@ -58,7 +61,7 @@ cdef class ContextInstruction(Instruction):
 cdef class VertexInstruction(Instruction):
     cdef BindTexture texture_binding
     cdef VertexBatch batch
-    cdef list _tex_coords
+    cdef float _tex_coords[8]
 
     cdef void radd(self, InstructionGroup ig)
     cdef void rinsert(self, InstructionGroup ig, int index)
@@ -81,7 +84,6 @@ cdef class CanvasBase(InstructionGroup):
     pass
 
 cdef class Canvas(CanvasBase):
-    cdef object __weakref__
     cdef float _opacity
     cdef CanvasBase _before
     cdef CanvasBase _after

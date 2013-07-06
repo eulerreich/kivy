@@ -17,7 +17,7 @@ __all__ = ('EventDispatcher', )
 
 from functools import partial
 from kivy.weakmethod import WeakMethod
-from kivy.properties cimport Property, ObjectProperty
+from kivy.properties cimport Property, PropertyStorage, ObjectProperty
 
 cdef int widget_uid = 0
 cdef dict cache_properties = {}
@@ -32,14 +32,25 @@ def _get_bases(cls):
         for cbase in _get_bases(base):
             yield cbase
 
-cdef class EventDispatcher(object):
+cdef class ObjectWithUid(object):
+    def __cinit__(self):
+        global widget_uid
+
+        # XXX for the moment, we need to create a uniq id for properties.
+        # Properties need a identifier to the class instance. hash() and id()
+        # are longer than using a custom __uid. I hope we can figure out a way
+        # of doing that without require any python code. :)
+        widget_uid += 1
+        self.uid = widget_uid
+
+cdef class EventDispatcher(ObjectWithUid):
     '''Generic event dispatcher interface
 
     See the module docstring for usage.
     '''
 
     def __cinit__(self, *largs, **kwargs):
-        global widget_uid, cache_properties
+        global cache_properties
         cdef dict cp = cache_properties
         cdef dict attrs_found
         cdef list attrs
@@ -50,13 +61,6 @@ cdef class EventDispatcher(object):
         self.__storage = {}
 
         __cls__ = self.__class__
-
-        # XXX for the moment, we need to create a uniq id for properties.
-        # Properties need a identifier to the class instance. hash() and id()
-        # are longer than using a custom __uid. I hope we can figure out a way
-        # of doing that without require any python code. :)
-        widget_uid += 1
-        self.uid = widget_uid
 
         if __cls__ not in cp:
             attrs_found = cp[__cls__] = {}
@@ -261,6 +265,28 @@ cdef class EventDispatcher(object):
             else:
                 prop = self.__properties[key]
                 prop.unbind(self, value)
+
+    def get_property_observers(self, name):
+        ''' Returns a list of methods that are bound to the property/event.
+        passed as the argument::
+
+            widget_instance.get_property_observers('on_release')
+
+        .. versionadded:: 1.8.0
+
+        '''
+        if name[:3] == 'on_':
+            return self.__event_stack[name]
+        cdef PropertyStorage ps = self.__storage[name]
+        return ps.observers
+
+    def events(EventDispatcher self):
+        '''Return all the events in that class. Can be used for introspection.
+
+        .. versionadded:: 1.8.0
+
+        '''
+        return self.__event_stack.keys()
 
     def dispatch(self, str event_type, *largs):
         '''Dispatch an event across all the handler added in bind().
