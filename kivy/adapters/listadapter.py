@@ -295,6 +295,29 @@ class ListAdapter(Adapter, EventDispatcher):
     defaults to -1 (no limit).
     '''
 
+    bind_selection_to_children = BooleanProperty(True)
+    '''Should the children of selectable list items have their selection follow
+    that of their parent (if they are themselves selectable)?
+
+    :data:`bind_selection_to_children` is a
+    :class:`~kivy.properties.BooleanProperty` and defaults to True (There will
+    be a call to select/deselect children of any list item when that item is
+    itself selected/deselected.).
+    '''
+
+    # TODO: Evaluate the need for this. If this is added, how will the bind
+    #       call work? (on_release here is not a string, but an arg):
+    #
+    #           view_instance.bind(on_release=self.handle_selection)
+    #
+    # selection_triggering_event = StringProperty('on_release')
+    # '''What is the name of the event fired from list items to effect selection?
+    #
+    # :data:`selection_triggering_event` is a
+    # :class:`~kivy.properties.StringProperty` and defaults to the Kivy event
+    # on_release, which is the typical case for buttons.
+    # '''
+
     cached_views = DictProperty({})
     '''View instances for data items are instantiated and managed by the
     adapter. Here we maintain a dictionary containing the view
@@ -509,8 +532,9 @@ class ListAdapter(Adapter, EventDispatcher):
 
         view_instance.bind(on_release=self.handle_selection)
 
-        for child in view_instance.children:
-            child.bind(on_release=self.handle_selection)
+        if self.bind_selection_to_children:
+            for child in view_instance.children:
+                child.bind(on_release=self.handle_selection)
 
         return view_instance
 
@@ -549,6 +573,9 @@ class ListAdapter(Adapter, EventDispatcher):
                 # this will be a reselection, and the user will notice no
                 # change, except perhaps a flicker.
                 #
+                # TODO: Does the above paragraph describe a timing issue that
+                #       is hard to predict? If so, clarify. Otherwise, clarify.
+                #
                 self.check_for_empty_selection()
 
         if not hold_dispatch:
@@ -584,6 +611,10 @@ class ListAdapter(Adapter, EventDispatcher):
                     or inspect.ismethod(view.select)):
                 view.select()
                 has_selection = True
+
+        # TODO: The handling of is_selected is not put here as an else clause,
+        #       so if calling select() has already set an is_selected property
+        #       this will be an unneccessary (redundant) reset.
 
         if hasattr(view, 'is_selected'):
             # TODO: Change this to use callable().

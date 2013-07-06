@@ -622,6 +622,12 @@ class ListItemButton(SelectableView, Button):
     :class:`~kivy.uix.listview.ListView`.
     '''
 
+    # TODO: ListItemButton could have a set of cosmetic (or otherwise, perhaps)
+    #       effects that should happen upon selection / deselection. For
+    #       example, instead of changing the background color, show a bold
+    #       border. Can this be handled by subclassing? Should there be a
+    #       "typical" set of optional effects?
+
     selected_color = ListProperty([1., 0., 0., 1])
     '''
     :data:`selected_color` is a :class:`~kivy.properties.ListProperty`,
