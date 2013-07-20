@@ -994,6 +994,11 @@ class ListView(AbstractView, EventDispatcher):
 
     def _spopulate(self, *args):
         self.populate()
+        # simulate the scroll again, only if we already scrolled before
+        # the position might not be the same, mostly because we don't know the
+        # size of the new item.
+        if hasattr(self, '_scroll_y'):
+            self._scroll(self._scroll_y)
 
     def _reset_spopulate(self, *args):
 

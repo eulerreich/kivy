@@ -50,6 +50,7 @@ Please refer to the installation instructions for your specific platform:
     installation-macosx
     installation-linux
     installation-android
+    troubleshooting-macosx
 
 
 .. _installation_devel:
@@ -91,6 +92,16 @@ Kivy requires a recent version of Cython, so it's better to use the last
 version published on pypi::
 
     $ sudo pip install --upgrade cython
+
+Mac OS X
+++++++++
+
+You will need to install at least the following:
+
+* PyGame - we recommend installing from a binary packaged for your version
+  of Mac OS X. Download it from http://www.pygame.org/download.shtml
+
+If you run into problems, please read :ref:`troubleshooting-macosx`.
 
 .. _dev-install:
 
