@@ -1,7 +1,9 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import NumericProperty
 from kivy.lang import Builder
+from kivy.properties import NumericProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.screenmanager import ScreenManager, Screen
 
 Builder.load_string('''
 #:import random random.random
@@ -78,7 +80,10 @@ class ScreenManagerApp(App):
         root = ScreenManager()
         for x in range(4):
             root.add_widget(CustomScreen(name='Screen %d' % x))
-        return root
+        box = BoxLayout(orientation='vertical')
+        box.add_widget(Button(text='hello world'))
+        box.add_widget(root)
+        return box
 
 if __name__ == '__main__':
     ScreenManagerApp().run()
