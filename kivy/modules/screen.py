@@ -32,6 +32,7 @@ devices = {
     # device: (name, width, height, dpi, density)
     'onex': ('HTC One X', 1280, 720, 312, 2),
     's3': ('Galaxy SIII', 1280, 720, 306, 2),
+    'note2': ('Galaxy Note II', 1280, 720, 267, 2),
     'droid2': ('Motolora Droid 2', 854, 480, 240, 1.5),
     'xoom': ('Motolora Xoom', 1280, 800, 149, 1),
     'ipad': ('iPad (1 and 2)', 1024, 768, 132, 1),
